@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iFinder: Understanding Implicit Trust Errors in Core Carrier Networks</title>
+  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+    <div class="container">
+      <div class="hero-top">
+        <img src="img/logo.jpg" alt="iFINDER Logo" class="hero-logo">
+        <div class="hero-text">
+          <h1>iFinder</h1>
+          <p class="subtitle">A Systematic Security Analysis of Open-Source 5G Core Network Implementations</p>
+        </div>
+      </div>
+      <p class="hero-description">
+        We discover <strong>84 vulnerabilities</strong> in the signaling interfaces of LTE/5G core
+        networks, each of which can result in a persistent denial of service that crashes core network
+        functions, and some of which allow a remote attacker to hijack subscriber sessions. Our research covers two LTE implementations
+        (Open5GS, OpenAirInterface) and five 5G implementations (Open5GS, free5GC, OpenAirInterface,
+        SD-Core, eUPF) across the two core signaling protocols GTP-C and PFCP; we find vulnerabilities in
+        <strong>every single LTE/5G implementation tested</strong>, 81 of which have already been
+        assigned CVEs.
+      </p>
+      <p class="hero-description">
+        Our research finds these vulnerabilities share a single recurring root cause, <strong>implicit
+        trust</strong> between core network functions, and are present in widely used open-source LTE/5G
+        cores that back research testbeds and commercial deployments alike. We
+        uncovered them automatically with iFinder, an LLM-agent pipeline. To learn more about how we were able to discover
+        these vulnerabilities, take a look at our paper.
+      </p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num" id="stat-total">…</span><span class="stat-label">Vulnerabilities</span></div>
+        <div class="stat"><span class="stat-num" id="stat-vendors">…</span><span class="stat-label">Implementations</span></div>
+        <div class="stat"><span class="stat-num" id="stat-protocols">…</span><span class="stat-label">Protocols</span></div>
+        <div class="stat"><span class="stat-num" id="stat-cves">…</span><span class="stat-label">CVEs Assigned</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats Overview -->
+  <section class="section stats-section" id="overview">
+    <div class="container">
+      <h2>Overview</h2>
+
+      <!-- Cross table -->
+      <div class="table-wrap">
+        <table class="cross-table" id="cross-table"></table>
+      </div>
+
+      <!-- Distribution charts -->
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>By Vendor</h3>
+          <div class="bar-chart" id="chart-vendor"></div>
+        </div>
+        <div class="chart-box">
+          <h3>By Pattern</h3>
+          <div class="bar-chart" id="chart-pattern"></div>
+        </div>
+        <div class="chart-box">
+          <h3>By Protocol</h3>
+          <div class="bar-chart" id="chart-protocol"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filters -->
+  <section class="section filter-section" id="filters">
+    <div class="container">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label for="filter-vendor">Vendor</label>
+          <select id="filter-vendor"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-protocol">Protocol</label>
+          <select id="filter-protocol"><option value="">All</option></select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-pattern">Pattern</label>
+          <select id="filter-pattern"><option value="">All</option></select>
+        </div>
+        <div class="filter-group filter-search">
+          <label for="filter-search">Search</label>
+          <input type="text" id="filter-search" placeholder="CVE, keyword, CWE…">
+        </div>
+        <button class="btn-reset" id="filter-reset">Reset</button>
+      </div>
+      <div class="filter-info">
+        Showing <strong id="filter-count">…</strong> of <strong id="filter-total">…</strong> vulnerabilities
+      </div>
+    </div>
+  </section>
+
+  <!-- Sidebar TOC + Vuln List -->
+  <section class="section main-content" id="vulnerabilities">
+    <div class="container main-layout">
+      <nav class="toc" id="toc">
+        <h3>Table of Contents</h3>
+        <ul id="toc-list"></ul>
+      </nav>
+      <div class="vuln-list" id="vuln-list"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>
+        <strong>5GC-Vuln-Atlas</strong> &middot;
+        <a href="https://github.com/Linziyuu/5GC-Vuln-Atlas" target="_blank" rel="noopener">GitHub Repository</a>
+      </p>
+      <p class="footer-note">
+        All vulnerabilities were responsibly disclosed. PoC code is provided for research and defensive purposes only.
+      </p>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
+  <script src="js/data.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
+</body>
+</html>
