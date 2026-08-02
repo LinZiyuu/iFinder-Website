@@ -320,6 +320,24 @@
     return html;
   }
 
+  /* ===== Bibtex copy ===== */
+  const BIBTEX = `@article{lin2026understanding,
+  title={Understanding Implicit Trust Errors in Core Carrier Networks through Multi-Agent Flaw Discovery and Analysis},
+  author={Lin, Ziyu and Wang, Ziting and Li, Xinfeng and Dong, Wei and Wang, XiaoFeng},
+  journal={arXiv preprint arXiv:2607.10315},
+  year={2026}
+}`;
+  const bibtexBtn = document.getElementById('bibtex-copy');
+  if (bibtexBtn) {
+    const bibtexLabel = bibtexBtn.querySelector('span');
+    bibtexBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(BIBTEX).then(() => {
+        bibtexLabel.textContent = 'Copied!';
+        setTimeout(() => { bibtexLabel.textContent = 'Bibtex'; }, 1500);
+      });
+    });
+  }
+
   /* ===== Helpers ===== */
   function groupByVendorProtocol(items) {
     const grouped = {};
