@@ -1,15 +1,8 @@
-/* 5GC-Vuln-Atlas — rendering + filtering */
+/* 5GC-Vuln-Atlas — rendering */
 (function () {
   'use strict';
 
   const { metadata, vulnerabilities } = VULN_DATA;
-
-  /* ===== DOM refs (must be before any function that uses them) ===== */
-  const filterVendor = document.getElementById('filter-vendor');
-  const filterProtocol = document.getElementById('filter-protocol');
-  const filterPattern = document.getElementById('filter-pattern');
-  const filterSearch = document.getElementById('filter-search');
-  const filterReset = document.getElementById('filter-reset');
 
   /* ===== Hero Stats ===== */
   document.getElementById('stat-total').textContent = metadata.total;
@@ -18,30 +11,9 @@
   const cveCount = vulnerabilities.filter(v => v.cve).length;
   document.getElementById('stat-cves').textContent = cveCount;
 
-  /* ===== Cross Table ===== */
-  buildCrossTable();
-
-  /* ===== Bar Charts ===== */
-  buildBarCharts();
-
-  /* ===== Populate Filters ===== */
-  populateFilters();
-
   /* ===== Render Vuln List ===== */
-  renderAll();
-
-  /* ===== Filter Events ===== */
-  [filterVendor, filterProtocol, filterPattern].forEach(el =>
-    el.addEventListener('change', renderAll)
-  );
-  filterSearch.addEventListener('input', debounce(renderAll, 200));
-  filterReset.addEventListener('click', () => {
-    filterVendor.value = '';
-    filterProtocol.value = '';
-    filterPattern.value = '';
-    filterSearch.value = '';
-    renderAll();
-  });
+  renderVulnList(vulnerabilities);
+  renderTOC(vulnerabilities);
 
   /* Deep-link: jump to anchor on load */
   if (location.hash) {
@@ -52,149 +24,6 @@
   }
 
   /* ================================================================ */
-
-  function getFiltered() {
-    const v = filterVendor.value;
-    const pr = filterProtocol.value;
-    const pa = filterPattern.value;
-    const q = filterSearch.value.trim().toLowerCase();
-
-    return vulnerabilities.filter(item => {
-      if (v && item.vendor !== v) return false;
-      if (pr && item.protocol !== pr) return false;
-      if (pa && item.pattern !== pa) return false;
-      if (q) {
-        const haystack = [
-          item.id, item.title, item.cve || '', item.cwe || '',
-          item.description, item.crash_type, item.target,
-          item.vendor_display, item.protocol_display, item.pattern,
-          item.pattern_display,
-        ].join(' ').toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
-      return true;
-    });
-  }
-
-  function renderAll() {
-    const filtered = getFiltered();
-    document.getElementById('filter-count').textContent = filtered.length;
-    document.getElementById('filter-total').textContent = metadata.total;
-    renderVulnList(filtered);
-    renderTOC(filtered);
-  }
-
-  /* ===== Cross Table ===== */
-  function buildCrossTable() {
-    const table = document.getElementById('cross-table');
-    const patterns = metadata.patterns;
-    const vendors = metadata.vendors;
-
-    const counts = {};
-    vendors.forEach(v => {
-      counts[v] = {};
-      patterns.forEach(p => { counts[v][p] = 0; });
-    });
-    vulnerabilities.forEach(item => {
-      if (counts[item.vendor] && counts[item.vendor][item.pattern] !== undefined) {
-        counts[item.vendor][item.pattern]++;
-      }
-    });
-
-    let html = '<thead><tr><th>Vendor</th>';
-    patterns.forEach(p => { html += `<th>${metadata.pattern_display[p]}</th>`; });
-    html += '<th>Total</th></tr></thead><tbody>';
-
-    vendors.forEach(v => {
-      html += `<tr><td>${metadata.vendor_display[v]}</td>`;
-      let rowTotal = 0;
-      patterns.forEach(p => {
-        const n = counts[v][p];
-        rowTotal += n;
-        html += `<td class="num ${n === 0 ? 'num-zero' : ''}">${n}</td>`;
-      });
-      html += `<td class="num">${rowTotal}</td></tr>`;
-    });
-
-    html += '<tr><td><strong>Total</strong></td>';
-    let grandTotal = 0;
-    patterns.forEach(p => {
-      const colSum = vendors.reduce((s, v) => s + counts[v][p], 0);
-      grandTotal += colSum;
-      html += `<td class="num">${colSum}</td>`;
-    });
-    html += `<td class="num">${grandTotal}</td></tr>`;
-    html += '</tbody>';
-
-    table.innerHTML = html;
-  }
-
-  /* ===== Bar Charts ===== */
-  function buildBarCharts() {
-    const vendorCounts = {};
-    metadata.vendors.forEach(v => { vendorCounts[v] = 0; });
-    vulnerabilities.forEach(item => { vendorCounts[item.vendor]++; });
-    const maxVendor = Math.max(...Object.values(vendorCounts));
-    document.getElementById('chart-vendor').innerHTML = metadata.vendors.map(v => {
-      const n = vendorCounts[v];
-      const pct = (n / maxVendor * 100).toFixed(0);
-      return `<div class="bar-row">
-        <span class="bar-label">${metadata.vendor_display[v]}</span>
-        <span class="bar-track"><span class="bar-fill vendor" style="width:${pct}%"></span></span>
-        <span class="bar-value">${n}</span>
-      </div>`;
-    }).join('');
-
-    const patternCounts = {};
-    metadata.patterns.forEach(p => { patternCounts[p] = 0; });
-    vulnerabilities.forEach(item => { patternCounts[item.pattern]++; });
-    const maxPattern = Math.max(...Object.values(patternCounts));
-    document.getElementById('chart-pattern').innerHTML = metadata.patterns.map(p => {
-      const n = patternCounts[p];
-      const pct = (n / maxPattern * 100).toFixed(0);
-      return `<div class="bar-row">
-        <span class="bar-label">${metadata.pattern_display[p]}</span>
-        <span class="bar-track"><span class="bar-fill pattern-${p}" style="width:${pct}%"></span></span>
-        <span class="bar-value">${n}</span>
-      </div>`;
-    }).join('');
-
-    const protoCounts = {};
-    metadata.protocols.forEach(p => { protoCounts[p] = 0; });
-    vulnerabilities.forEach(item => { protoCounts[item.protocol]++; });
-    const maxProto = Math.max(...Object.values(protoCounts));
-    document.getElementById('chart-protocol').innerHTML = metadata.protocols.map(p => {
-      const n = protoCounts[p];
-      const pct = (n / maxProto * 100).toFixed(0);
-      return `<div class="bar-row">
-        <span class="bar-label">${metadata.protocol_display[p]}</span>
-        <span class="bar-track"><span class="bar-fill protocol" style="width:${pct}%"></span></span>
-        <span class="bar-value">${n}</span>
-      </div>`;
-    }).join('');
-  }
-
-  /* ===== Populate Filters ===== */
-  function populateFilters() {
-    metadata.vendors.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v;
-      opt.textContent = metadata.vendor_display[v];
-      filterVendor.appendChild(opt);
-    });
-    metadata.protocols.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.textContent = metadata.protocol_display[p];
-      filterProtocol.appendChild(opt);
-    });
-    metadata.patterns.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.textContent = metadata.pattern_display[p];
-      filterPattern.appendChild(opt);
-    });
-  }
 
   /* ===== Render TOC ===== */
   function renderTOC(filtered) {
@@ -222,12 +51,6 @@
   /* ===== Render Vuln List ===== */
   function renderVulnList(filtered) {
     const container = document.getElementById('vuln-list');
-
-    if (filtered.length === 0) {
-      container.innerHTML = '<div class="no-results">No vulnerabilities match the current filters.</div>';
-      return;
-    }
-
     const grouped = groupByVendorProtocol(filtered);
     let html = '';
 
@@ -365,13 +188,5 @@
 
   function stripTags(html) {
     return html.replace(/<[^>]*>/g, '');
-  }
-
-  function debounce(fn, ms) {
-    let timer;
-    return function () {
-      clearTimeout(timer);
-      timer = setTimeout(fn, ms);
-    };
   }
 })();
